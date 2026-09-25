@@ -1,0 +1,160 @@
+import { useState, useEffect } from 'react';
+import { MockService } from '../services/mockService';
+import { Contest, PerformanceStats, UserResponse } from '../types';
+import { supabase } from '@/integrations/supabase/client';
+
+export function useDashboardData() {
+
+  const [stats, setStats] = useState<PerformanceStats | null>(null);
+  const [focusedContest, setFocusedContest] = useState<Contest | undefined>(undefined);
+  const [contests, setContests] = useState<Contest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      const performance = await MockService.getPerformanceStats();
+      const contest = await MockService.getFocusedContest();
+      const allContests = await MockService.getContests();
+      setStats(performance);
+      setFocusedContest(contest);
+      setContests(allContests);
+      setIsLoading(false);
+    };
+
+    loadData();
+  }, []);
+
+  const refreshStats = async () => {
+    setStats(await MockService.getPerformanceStats());
+  };
+
+  return { stats, focusedContest, contests, isLoading, refreshStats };
+}
+
+import { SubscriptionTier, UserProfile } from '../types';
+import { OWNER_EMAIL } from './useDashboard.constants';
+import { getLocalSession } from '@/lib/localSession';
+
+export { OWNER_EMAIL };
+
+export function useAuthStatus() {
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const local = getLocalSession();
+
+      let session: any = null;
+      if (!local) {
+        try {
+          session = (await supabase.auth.getSession()).data.session;
+        } catch {
+          session = null;
+        }
+      }
+
+      if (!session && local) {
+        const isOwner = local.email === OWNER_EMAIL;
+        setUser({
+          id: local.id,
+          full_name: local.full_name,
+          name: local.full_name,
+          email: local.email,
+          subscription_tier: isOwner ? 'premium' : 'plus',
+          onboarding_completed: false,
+          onboarding_progress: {},
+          is_activated: true,
+          role: isOwner ? 'admin' : 'user'
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (session) {
+        // Buscando perfil e roles diretamente do banco
+        const [profileRes, rolesRes] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single(),
+          supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .single()
+        ]);
+
+        const profile = profileRes.data;
+        const roleData = rolesRes.data;
+
+        const isOwner = (session.user.email || '').toLowerCase() === OWNER_EMAIL;
+
+        // Lógica de data efetiva: se o plano expirou, volta para free
+        let currentTier = (profile?.subscription_tier as SubscriptionTier) || 'free';
+        let isActivated = !!profile?.is_activated;
+        
+        if (profile?.subscription_expires_at) {
+          const expiryDate = new Date(profile.subscription_expires_at);
+          if (expiryDate < new Date()) {
+            currentTier = 'free';
+            isActivated = false;
+          }
+        }
+
+        if (isOwner) {
+          currentTier = 'premium';
+          isActivated = true;
+        }
+
+        setUser({
+          id: session.user.id,
+          full_name: profile?.full_name || session.user.user_metadata['full_name'] || 'Usuário',
+          name: profile?.full_name || session.user.user_metadata['full_name'] || 'Usuário',
+          email: session.user.email || '',
+          subscription_tier: currentTier,
+          subscription_expires_at: isOwner ? undefined : profile?.subscription_expires_at,
+          onboarding_completed: !!profile?.onboarding_completed,
+          onboarding_progress: profile?.onboarding_progress || {},
+          is_activated: isActivated,
+          role: isOwner ? 'admin' : ((roleData?.role as 'admin' | 'moderator' | 'user') || 'user')
+        });
+      } else {
+        // Fallback para modo demo/visitante
+        setUser({
+          id: 'demo-user',
+          full_name: 'João Silva (Demo)',
+          name: 'João Silva (Demo)',
+          email: 'joao.demo@norteconcurso.com.br',
+          subscription_tier: 'plus',
+          onboarding_completed: false,
+          onboarding_progress: {},
+          is_activated: true,
+          role: 'user'
+        });
+      }
+      setIsLoading(false);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkAuth();
+    });
+
+    const onLocal = () => checkAuth();
+    window.addEventListener('nc-local-session', onLocal);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener('nc-local-session', onLocal);
+    };
+  }, []);
+
+  return { user, isAuthenticated: !!user && user.id !== 'demo-user', isLoading, isAdmin: user?.role === 'admin' };
+}
+
+
+
