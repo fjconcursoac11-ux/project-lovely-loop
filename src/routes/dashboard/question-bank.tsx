@@ -40,6 +40,10 @@ interface QBItem {
   verified_at?: string | null;
   law_version_checked_at?: string | null;
   is_original?: boolean;
+  options?: { letter: string; text: string }[] | null;
+  legal_reference?: string | null;
+  currency_note?: string | null;
+  source_url?: string | null;
 }
 
 function QuestionBankPage() {
@@ -59,7 +63,7 @@ function QuestionBankPage() {
     }
     const load = async () => {
       setIsLoading(true);
-      const [personalResult, curatedResult] = await Promise.all([
+      const [personalResult, curatedResult, practiceResult] = await Promise.all([
         supabase
           .from('question_bank')
           .select('*')
@@ -72,6 +76,11 @@ function QuestionBankPage() {
           .eq('content_status', 'active')
           .order('contest_year', { ascending: false })
           .order('created_at', { ascending: true }),
+        supabase
+          .from('practice_questions')
+          .select('*')
+          .order('contest_year', { ascending: false })
+          .order('item_number', { ascending: true }),
       ]);
 
       const personal = ((personalResult.data as QBItem[]) || []).filter(
@@ -99,7 +108,34 @@ function QuestionBankPage() {
           is_original: true,
         }),
       );
-      setItems([...curated, ...personal]);
+      const practice = ((practiceResult.data as Array<Record<string, unknown>>) || []).map(
+        (row): QBItem => ({
+          id: `practice-${String(row.id)}`,
+          contest_name: String(row.contest_name),
+          contest_year: String(row.contest_year),
+          career_name: String(row.career),
+          item_number: Number(row.item_number),
+          subject: String(row.discipline),
+          subtopic: row.legal_reference ? String(row.legal_reference) : null,
+          question_text: String(row.question_text),
+          official_answer: row.is_annulled ? null : (row.correct_answer ? String(row.correct_answer) : null),
+          candidate_answer: null,
+          is_correct: null,
+          is_anulada: Boolean(row.is_annulled),
+          explanation:
+            (row.currency_note ? String(row.currency_note) + ' ' : '') +
+            'Fonte: prova objetiva oficial, texto literal do caderno de provas (não é questão autoral).',
+          difficulty: null,
+          source_confidence: 'alta',
+          verified_at: row.verified_at ? String(row.verified_at) : null,
+          is_original: false,
+          options: (row.options as { letter: string; text: string }[]) || null,
+          legal_reference: row.legal_reference ? String(row.legal_reference) : null,
+          currency_note: row.currency_note ? String(row.currency_note) : null,
+          source_url: row.source_url ? String(row.source_url) : null,
+        }),
+      );
+      setItems([...curated, ...practice, ...personal]);
       setIsLoading(false);
     };
     load();
@@ -263,6 +299,14 @@ function QuestionBankPage() {
                           Questão autoral
                         </Badge>
                       )}
+                      {q.options && q.options.length > 0 && (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-orange-200 bg-orange-50 text-orange-700"
+                        >
+                          Texto literal da prova
+                        </Badge>
+                      )}
                       {q.verified_at && (
                         <Badge
                           variant="outline"
@@ -286,9 +330,26 @@ function QuestionBankPage() {
 
                 {isOpen && (
                   <div className="mt-3 pt-3 border-t space-y-2">
+                    {q.options && q.options.length > 0 && (
+                      <div className="space-y-1 mb-2">
+                        {q.options.map((opt) => (
+                          <p
+                            key={opt.letter}
+                            className={cn(
+                              'text-sm rounded-md px-2 py-1',
+                              !q.is_anulada && q.official_answer === opt.letter
+                                ? 'bg-emerald-50 text-emerald-800 font-medium'
+                                : 'text-foreground',
+                            )}
+                          >
+                            <strong>{opt.letter})</strong> {opt.text}
+                          </p>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex flex-wrap gap-3 text-xs">
                       <span>
-                        Gabarito oficial: <strong>{q.official_answer || '—'}</strong>
+                        Gabarito oficial: <strong>{q.is_anulada ? 'ANULADA' : q.official_answer || '—'}</strong>
                       </span>
                       {q.candidate_answer && (
                         <span>
@@ -312,6 +373,17 @@ function QuestionBankPage() {
                         Confiança da explicação: {q.source_confidence} — vale conferir com material
                         complementar.
                       </p>
+                    )}
+                    {q.source_url && (
+                      <a
+                        href={q.source_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-[10px] text-secondary hover:underline inline-block"
+                      >
+                        Ver prova oficial completa
+                      </a>
                     )}
                   </div>
                 )}
