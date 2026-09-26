@@ -5,7 +5,7 @@ import { useAuthStatus } from '@/hooks/useDashboard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { BookMarked, CheckCircle2, XCircle, CircleSlash, ChevronDown, ChevronUp } from 'lucide-react';
+import { BookMarked, CheckCircle2, XCircle, CircleSlash, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const Route = createFileRoute('/dashboard/question-bank')({
@@ -27,6 +27,9 @@ interface QBItem {
   explanation: string;
   difficulty: string | null;
   source_confidence: string;
+  content_status?: string;
+  verified_at?: string | null;
+  law_version_checked_at?: string | null;
 }
 
 function QuestionBankPage() {
@@ -48,7 +51,7 @@ function QuestionBankPage() {
         .eq('user_id', user.id)
         .order('contest_year', { ascending: true })
         .order('item_number', { ascending: true });
-      setItems((data as QBItem[]) || []);
+      setItems(((data as QBItem[]) || []).filter(item => !['obsolete', 'revoked', 'archived'].includes(item.content_status || 'active')));
       setIsLoading(false);
     };
     load();
@@ -98,9 +101,14 @@ function QuestionBankPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-primary">Banco de Questões</h1>
-        <p className="text-muted-foreground">Questão por questão das suas provas reais, com gabarito e explicação.</p>
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-primary">Banco de Questões</h1>
+          <p className="text-muted-foreground">Questões vinculadas ao edital oficial, com gabarito e explicação pedagógica.</p>
+        </div>
+        <Badge variant="outline" className="w-fit gap-1.5 border-emerald-200 bg-emerald-50 px-3 py-1.5 text-emerald-700">
+          <ShieldCheck className="h-3.5 w-3.5" /> Matriz PF 2025 verificada
+        </Badge>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -139,6 +147,7 @@ function QuestionBankPage() {
                       <Badge variant="outline" className="text-[10px]">Item {q.item_number}</Badge>
                       <Badge className="text-[10px] bg-secondary">{q.subject}</Badge>
                       {q.subtopic && <span className="text-[10px] text-muted-foreground">{q.subtopic}</span>}
+                      {q.verified_at && <Badge variant="outline" className="text-[10px] border-emerald-200 text-emerald-700">Edital verificado</Badge>}
                       <StatusIcon anulada={q.is_anulada} correct={q.is_correct} />
                     </div>
                     <p className="text-sm leading-relaxed">{q.question_text}</p>
