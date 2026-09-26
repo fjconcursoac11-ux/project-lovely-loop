@@ -41,7 +41,7 @@ export function useAuthStatus() {
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (session) {
         // Buscando perfil e roles diretamente do banco
         const [profileRes, rolesRes] = await Promise.all([
