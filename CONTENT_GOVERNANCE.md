@@ -15,3 +15,7 @@ Questões jurídicas só podem ser publicadas com:
 Conteúdo revogado, substituído, superado ou incompatível com o edital deve ficar como `obsolete`, `revoked` ou `archived`, nunca ser apresentado como questão ativa. Súmulas e jurisprudência devem ser verificadas diretamente no tribunal competente.
 
 O catálogo é reutilizável entre carreiras: matérias e normas podem servir a vários concursos, mas a pertinência de cada questão sempre depende do edital da carreira escolhida.
+
+## Editais históricos
+
+Editais anteriores são fontes de repertório, não fontes automáticas de vigência. Conteúdos ainda válidos ficam vinculados à edição histórica; itens revogados, substituídos, obsoletos ou dependentes de atualidades são registrados em `syllabus_exclusions`. Nenhum item histórico pode alimentar questão ativa até ser confrontado com o edital atual e com a fonte oficial vigente.
