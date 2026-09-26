@@ -26,6 +26,7 @@ import {
   BookMarked,
   PenLine,
   Timer,
+  Scale,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -52,6 +53,7 @@ const menuItems = [
   { label: "Minhas Provas", icon: FileStack, href: "/dashboard/student-exams" },
   { label: "Banco de Questões", icon: BookMarked, href: "/dashboard/question-bank" },
   { label: "Redação", icon: PenLine, href: "/dashboard/essays" },
+  { label: "Arsenal de Legislação", icon: Scale, href: "/dashboard/legislacao" },
   { label: "Central de Estudos", icon: Timer, href: "/dashboard/study-tools" },
   { label: "Plano de Estudos", icon: ClipboardList, href: "/dashboard/study-plan" },
   { label: "Questões (simulado)", icon: Search, href: "/dashboard/questions" },
