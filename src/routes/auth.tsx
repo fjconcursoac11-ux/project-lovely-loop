@@ -12,6 +12,7 @@ import {
   Loader2,
   Lock,
   Mail,
+  UserRound,
   ShieldCheck,
   Sparkles,
   Star,
@@ -40,20 +41,36 @@ function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const normalizeCpf = (value: string) => value.replace(/\D/g, "").slice(0, 11);
+  const formatCpf = (value: string) => {
+    const digits = normalizeCpf(value);
+    return digits
+      .replace(/^(\d{3})(\d)/, "$1.$2")
+      .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+      .replace(/\.(\d{3})(\d)/, ".$1-$2");
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       if (mode === "register") {
+        const cpfDigits = normalizeCpf(cpf);
+        if (cpfDigits.length !== 11) throw new Error("Informe um CPF com 11 números.");
         const { error } = await supabase.auth.signUp({
-          email,
+          email: `${cpfDigits}@norteconcurso.local`,
           password: pin,
-          options: { data: { full_name: name, cpf } },
+          options: { data: { full_name: name, cpf: cpfDigits, contact_email: email } },
         });
         if (error) throw error;
-        toast.success("Conta criada! Verifique seu e-mail.");
+        toast.success("Conta criada! Agora você pode acessar com seu CPF.");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password: pin });
+        const cpfDigits = normalizeCpf(cpf);
+        if (cpfDigits.length !== 11) throw new Error("Informe um CPF com 11 números.");
+        const { error } = await supabase.auth.signInWithPassword({
+          email: `${cpfDigits}@norteconcurso.local`,
+          password: pin,
+        });
         if (error) throw error;
         toast.success("Bem-vindo à sua preparação!");
         navigate({ to: "/dashboard" });
@@ -120,7 +137,7 @@ function AuthPage() {
             <h2>{mode === "login" ? "Acesse sua preparação" : "Crie sua conta gratuita"}</h2>
             <p>
               {mode === "login"
-                ? "Continue de onde parou e avance na sua rota."
+                ? "Entre com seu CPF e continue de onde parou."
                 : "Leva menos de dois minutos para começar."}
             </p>
           </div>
@@ -137,32 +154,37 @@ function AuthPage() {
                 />
               </div>
             )}
+            {mode === "register" && (
+              <div className="auth-field">
+                <Label htmlFor="email">E-mail para contato</Label>
+                <div>
+                  <Mail />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="seuemail@exemplo.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            )}
             <div className="auth-field">
-              <Label htmlFor="email">E-mail</Label>
+              <Label htmlFor="cpf">CPF</Label>
               <div>
-                <Mail />
+                <UserRound />
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="seuemail@exemplo.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="cpf"
+                  inputMode="numeric"
+                  autoComplete="username"
+                  placeholder="000.000.000-00"
+                  value={cpf}
+                  onChange={(e) => setCpf(formatCpf(e.target.value))}
                   required
                 />
               </div>
             </div>
-            {mode === "register" && (
-              <div className="auth-field">
-                <Label htmlFor="cpf">CPF</Label>
-                <Input
-                  id="cpf"
-                  placeholder="000.000.000-00"
-                  value={cpf}
-                  onChange={(e) => setCpf(e.target.value)}
-                  required
-                />
-              </div>
-            )}
             <div className="auth-field">
               <div className="flex items-center justify-between">
                 <Label htmlFor="pin">Senha de acesso</Label>
