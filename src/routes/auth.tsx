@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  Compass,
   Eye,
   EyeOff,
   Loader2,
@@ -15,6 +14,7 @@ import {
   Mail,
   ShieldCheck,
   Sparkles,
+  Star,
   Target,
   Trophy,
 } from "lucide-react";
@@ -72,7 +72,7 @@ function AuthPage() {
         <div className="auth-visual-content">
           <Link to="/" className="brand-lockup">
             <span className="brand-mark">
-              <Compass />
+              <Star aria-hidden="true" />
             </span>
             <span className="text-white">
               Norte<span>Concurso</span>
@@ -109,7 +109,7 @@ function AuthPage() {
           </Link>
           <div className="auth-mobile-brand">
             <span className="brand-mark">
-              <Compass />
+              <Star aria-hidden="true" />
             </span>
             <strong>
               Norte<span>Concurso</span>

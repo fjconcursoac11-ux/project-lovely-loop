@@ -205,6 +205,7 @@
   color: #36c79a;
 }
 .brand-mark {
+  position: relative;
   display: grid;
   place-items: center;
   width: 34px;
@@ -216,6 +217,15 @@
 }
 .brand-mark svg {
   width: 19px;
+  fill: currentColor;
+  stroke-width: 1.8;
+  transition:
+    transform 240ms ease,
+    filter 240ms ease;
+}
+.brand-lockup:hover .brand-mark svg {
+  transform: rotate(8deg) scale(1.08);
+  filter: drop-shadow(0 0 5px rgb(255 255 255 / 0.45));
 }
 .premium-button {
   border: 0 !important;

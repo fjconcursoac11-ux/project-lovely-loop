@@ -9,7 +9,6 @@ import {
   ChevronRight,
   CirclePlay,
   Clock3,
-  Compass,
   FileSearch,
   Flame,
   Landmark,
@@ -99,7 +98,7 @@ function Brand({ light = false }: { light?: boolean }) {
   return (
     <span className="brand-lockup">
       <span className="brand-mark">
-        <Compass />
+        <Star aria-hidden="true" />
       </span>
       <span className={light ? "text-white" : "text-primary"}>
         Norte<span>Concurso</span>

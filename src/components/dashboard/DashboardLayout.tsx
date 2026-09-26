@@ -20,7 +20,7 @@ import {
   Moon,
   Sun,
   Flame,
-  Compass,
+  Star,
   ShieldCheck,
   FileStack,
   BookMarked,
@@ -133,7 +133,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {!isCollapsed ? (
             <Link to="/dashboard" className="brand-lockup">
               <span className="brand-mark">
-                <Compass />
+                <Star aria-hidden="true" />
               </span>
               <span className="text-white">
                 Norte<span>Concurso</span>
@@ -141,7 +141,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </Link>
           ) : (
             <span className="brand-mark mx-auto">
-              <Compass />
+              <Star aria-hidden="true" />
             </span>
           )}
           <div className="flex items-center gap-1">
