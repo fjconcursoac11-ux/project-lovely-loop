@@ -122,7 +122,7 @@ function PomodoroCard() {
 function FlashcardsCard() {
   const [idx, setIdx] = React.useState(0);
   const [flipped, setFlipped] = React.useState(false);
-  const card = FLASHCARDS[idx];
+  const card = FLASHCARDS[idx]!;
 
   const next = () => { setFlipped(false); setIdx(i => (i + 1) % FLASHCARDS.length); };
   const prev = () => { setFlipped(false); setIdx(i => (i - 1 + FLASHCARDS.length) % FLASHCARDS.length); };

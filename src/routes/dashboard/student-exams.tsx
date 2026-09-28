@@ -65,7 +65,7 @@ function StudentExamsPage() {
     const missing = group.docs.filter((doc) => !signedUrls[doc.id]);
     if (!missing.length) return;
     const results = await Promise.all(missing.map((doc) => supabase.storage.from("student-exams").createSignedUrl(doc.storage_path, 3600)));
-    setSignedUrls((previous) => { const next = { ...previous }; missing.forEach((doc, index) => { const url = results[index].data?.signedUrl; if (url) next[doc.id] = url; }); return next; });
+    setSignedUrls((previous) => { const next = { ...previous }; missing.forEach((doc, index) => { const url = results[index]?.data?.signedUrl; if (url) next[doc.id] = url; }); return next; });
   };
 
   if (authLoading || isLoading) return <div className="p-8 text-sm text-muted-foreground">Sincronizando histórico de provas...</div>;
@@ -78,7 +78,7 @@ function StudentExamsPage() {
   const totalCorrect = groups.reduce((sum, group) => sum + metric(group.correct_count), 0);
   const totalWrong = groups.reduce((sum, group) => sum + metric(group.wrong_count), 0);
   const globalAccuracy = totalCorrect + totalWrong ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) : 0;
-  const bestExam = [...groups].sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity))[0];
+  const bestExam = [...groups].sort((a, b) => (b.score ?? -Infinity) - (a.score ?? -Infinity))[0]!;
   const evolution = (chartData.at(-1)?.aproveitamento ?? 0) - (chartData[0]?.aproveitamento ?? 0);
 
   return <div className="space-y-7">
@@ -94,7 +94,7 @@ function StudentExamsPage() {
       <MetricCard icon={FileStack} label="Provas analisadas" value={String(groups.length)} detail={`${totalPages} páginas processadas`} tone="navy" />
       <MetricCard icon={Target} label="Aproveitamento geral" value={`${globalAccuracy}%`} detail={`${totalCorrect} acertos em ${totalCorrect + totalWrong} itens`} tone="emerald" />
       <MetricCard icon={BarChart3} label="Melhor saldo" value={`${bestExam.score ?? 0} pts`} detail={`PF ${bestExam.contest_year} · padrão CEBRASPE`} tone="amber" />
-      <MetricCard icon={TrendingUp} label="Evolução histórica" value={`${evolution >= 0 ? "+" : ""}${evolution} p.p.`} detail={`${groups[0].contest_year} → ${groups.at(-1)?.contest_year}`} tone={evolution >= 0 ? "emerald" : "rose"} />
+      <MetricCard icon={TrendingUp} label="Evolução histórica" value={`${evolution >= 0 ? "+" : ""}${evolution} p.p.`} detail={`${groups[0]?.contest_year} → ${groups.at(-1)?.contest_year}`} tone={evolution >= 0 ? "emerald" : "rose"} />
     </section>
 
     <section className="grid gap-5 xl:grid-cols-[1.55fr_1fr]">
@@ -104,7 +104,7 @@ function StudentExamsPage() {
 
     <section className="space-y-4">
       <div><h2 className="text-xl font-black text-primary">Histórico detalhado</h2><p className="text-sm text-muted-foreground">Abra uma prova para consultar o boletim e todas as páginas digitalizadas.</p></div>
-      {groups.map((group) => { const answered = metric(group.correct_count) + metric(group.wrong_count); const accuracy = answered ? Math.round((metric(group.correct_count) / answered) * 100) : 0; const official = group.extracted_data?.resultado_oficial; const isOpen = openKey === group.key; return <Card key={group.key} className={cn("overflow-hidden transition-all", isOpen && "border-emerald-300 shadow-md")}>
+      {groups.map((group) => { const answered = metric(group.correct_count) + metric(group.wrong_count); const accuracy = answered ? Math.round((metric(group.correct_count) / answered) * 100) : 0; const official = group.extracted_data?.['resultado_oficial']; const isOpen = openKey === group.key; return <Card key={group.key} className={cn("overflow-hidden transition-all", isOpen && "border-emerald-300 shadow-md")}>
         <button type="button" onClick={() => openGroup(group)} className="w-full text-left"><CardHeader className="transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-900/30"><div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center"><div className="flex items-center gap-4"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#071a2f] text-lg font-black text-emerald-300">{group.contest_year.slice(-2)}</div><div><CardTitle className="flex flex-wrap items-center gap-2 text-lg">{group.contest_name} — {group.contest_year}{official && <Badge className="bg-emerald-600">Oficial</Badge>}</CardTitle><CardDescription className="mt-1">{group.exam_board || "Banca não identificada"} · {group.pageCount} páginas</CardDescription></div></div><div className="grid grid-cols-4 items-center gap-3 text-center sm:gap-6"><MiniMetric label="Acertos" value={metric(group.correct_count)} className="text-emerald-600" /><MiniMetric label="Erros" value={metric(group.wrong_count)} className="text-rose-600" /><MiniMetric label="Saldo" value={group.score ?? 0} className="text-primary" /><div className="flex items-center gap-3"><MiniMetric label="Taxa" value={`${accuracy}%`} className="text-amber-600" /><ChevronDown className={cn("h-5 w-5 text-muted-foreground transition-transform", isOpen && "rotate-180")} /></div></div></div></CardHeader></button>
         {isOpen && <CardContent className="space-y-5 border-t bg-slate-50/50 pt-5 dark:bg-slate-950/20">{official && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200"><p className="font-black">Boletim individual CEBRASPE confirmado</p><p className="mt-1">Nota total: {official.nota_total ?? group.score} pontos · {official.acertos_total ?? group.correct_count} acertos · {official.erros_total ?? group.wrong_count} erros{official.classificacao_ampla_objetiva && ` · ${official.classificacao_ampla_objetiva}ª colocação`}</p></div>}<div><p className="mb-3 flex items-center gap-2 text-sm font-bold"><ImageIcon className="h-4 w-4" />Caderno digitalizado</p><div className="grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">{group.docs.map((doc, index) => <a key={doc.id} href={signedUrls[doc.id] || undefined} target="_blank" rel="noopener noreferrer" className="group relative aspect-[3/4] overflow-hidden rounded-xl border bg-muted shadow-sm transition hover:-translate-y-1 hover:ring-2 hover:ring-emerald-400">{signedUrls[doc.id] ? <img src={signedUrls[doc.id]} alt={`Página ${index + 1}`} className="h-full w-full object-cover" loading="lazy" /> : <span className="flex h-full items-center justify-center text-[10px] text-muted-foreground">carregando…</span>}<span className="absolute bottom-0 left-0 right-0 flex items-center justify-between bg-gradient-to-t from-black/80 to-transparent px-2 pb-2 pt-5 text-[10px] font-bold text-white">Pág. {index + 1}<ExternalLink className="h-3 w-3" /></span></a>)}</div></div></CardContent>}
       </Card>; })}

@@ -22,5 +22,5 @@ export function careerById(id: string): CareerDef | undefined {
 
 export function careerByAgency(agency?: string | null): CareerDef | undefined {
   if (!agency) return undefined;
-  return CAREERS.find(c => agency.toLowerCase().includes(c.agency.toLowerCase().split(' ')[0].toLowerCase()));
+  return CAREERS.find(c => agency.toLowerCase().includes(c.agency.toLowerCase().split(' ')[0]!.toLowerCase()));
 }

@@ -22,11 +22,11 @@ function CareersPage() {
       const next: Record<string, { exams: number; questions: number }> = {};
       (examsRes.data || []).forEach((r: any) => {
         const c = CAREERS.find(c => r.contest_name?.toLowerCase().includes(c.agency.toLowerCase()) || r.contest_name?.toLowerCase().includes(c.name.toLowerCase()));
-        if (c) { next[c.id] = next[c.id] || { exams: 0, questions: 0 }; next[c.id].exams++; }
+        if (c) { const entry = next[c.id] ?? (next[c.id] = { exams: 0, questions: 0 }); entry.exams++; }
       });
       (questionsRes.data || []).forEach((r: any) => {
         const c = CAREERS.find(c => r.contest_name?.toLowerCase().includes(c.agency.toLowerCase()) || r.contest_name?.toLowerCase().includes(c.name.toLowerCase()));
-        if (c) { next[c.id] = next[c.id] || { exams: 0, questions: 0 }; next[c.id].questions++; }
+        if (c) { const entry = next[c.id] ?? (next[c.id] = { exams: 0, questions: 0 }); entry.questions++; }
       });
       setCounts(next);
     };

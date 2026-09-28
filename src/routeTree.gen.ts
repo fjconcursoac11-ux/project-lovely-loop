@@ -21,6 +21,7 @@ import { Route as DashboardCareersRouteImport } from './routes/dashboard/careers
 import { Route as DashboardErrorsRouteImport } from './routes/dashboard/errors'
 import { Route as DashboardEssaysRouteImport } from './routes/dashboard/essays'
 import { Route as DashboardHistoryRouteImport } from './routes/dashboard/history'
+import { Route as DashboardLegislacaoRouteImport } from './routes/dashboard/legislacao'
 import { Route as DashboardMockExamsRouteImport } from './routes/dashboard/mock-exams'
 import { Route as DashboardMyContestRouteImport } from './routes/dashboard/my-contest'
 import { Route as DashboardNotebooksRouteImport } from './routes/dashboard/notebooks'
@@ -92,6 +93,11 @@ const DashboardEssaysRoute = DashboardEssaysRouteImport.update({
 const DashboardHistoryRoute = DashboardHistoryRouteImport.update({
   id: '/history',
   path: '/history',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLegislacaoRoute = DashboardLegislacaoRouteImport.update({
+  id: '/legislacao',
+  path: '/legislacao',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardMockExamsRoute = DashboardMockExamsRouteImport.update({
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/errors': typeof DashboardErrorsRoute
   '/dashboard/essays': typeof DashboardEssaysRoute
   '/dashboard/history': typeof DashboardHistoryRoute
+  '/dashboard/legislacao': typeof DashboardLegislacaoRoute
   '/dashboard/mock-exams': typeof DashboardMockExamsRoute
   '/dashboard/my-contest': typeof DashboardMyContestRoute
   '/dashboard/notebooks': typeof DashboardNotebooksRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   '/dashboard/errors': typeof DashboardErrorsRoute
   '/dashboard/essays': typeof DashboardEssaysRoute
   '/dashboard/history': typeof DashboardHistoryRoute
+  '/dashboard/legislacao': typeof DashboardLegislacaoRoute
   '/dashboard/mock-exams': typeof DashboardMockExamsRoute
   '/dashboard/my-contest': typeof DashboardMyContestRoute
   '/dashboard/notebooks': typeof DashboardNotebooksRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/dashboard/errors': typeof DashboardErrorsRoute
   '/dashboard/essays': typeof DashboardEssaysRoute
   '/dashboard/history': typeof DashboardHistoryRoute
+  '/dashboard/legislacao': typeof DashboardLegislacaoRoute
   '/dashboard/mock-exams': typeof DashboardMockExamsRoute
   '/dashboard/my-contest': typeof DashboardMyContestRoute
   '/dashboard/notebooks': typeof DashboardNotebooksRoute
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/dashboard/errors'
     | '/dashboard/essays'
     | '/dashboard/history'
+    | '/dashboard/legislacao'
     | '/dashboard/mock-exams'
     | '/dashboard/my-contest'
     | '/dashboard/notebooks'
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/dashboard/errors'
     | '/dashboard/essays'
     | '/dashboard/history'
+    | '/dashboard/legislacao'
     | '/dashboard/mock-exams'
     | '/dashboard/my-contest'
     | '/dashboard/notebooks'
@@ -298,6 +309,7 @@ export interface FileRouteTypes {
     | '/dashboard/errors'
     | '/dashboard/essays'
     | '/dashboard/history'
+    | '/dashboard/legislacao'
     | '/dashboard/mock-exams'
     | '/dashboard/my-contest'
     | '/dashboard/notebooks'
@@ -409,6 +421,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardHistoryRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/legislacao': {
+      id: '/dashboard/legislacao'
+      path: '/legislacao'
+      fullPath: '/dashboard/legislacao'
+      preLoaderRoute: typeof DashboardLegislacaoRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/mock-exams': {
       id: '/dashboard/mock-exams'
       path: '/mock-exams'
@@ -502,6 +521,7 @@ interface DashboardRouteChildren {
   DashboardErrorsRoute: typeof DashboardErrorsRoute
   DashboardEssaysRoute: typeof DashboardEssaysRoute
   DashboardHistoryRoute: typeof DashboardHistoryRoute
+  DashboardLegislacaoRoute: typeof DashboardLegislacaoRoute
   DashboardMockExamsRoute: typeof DashboardMockExamsRoute
   DashboardMyContestRoute: typeof DashboardMyContestRoute
   DashboardNotebooksRoute: typeof DashboardNotebooksRoute
@@ -522,6 +542,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardErrorsRoute: DashboardErrorsRoute,
   DashboardEssaysRoute: DashboardEssaysRoute,
   DashboardHistoryRoute: DashboardHistoryRoute,
+  DashboardLegislacaoRoute: DashboardLegislacaoRoute,
   DashboardMockExamsRoute: DashboardMockExamsRoute,
   DashboardMyContestRoute: DashboardMyContestRoute,
   DashboardNotebooksRoute: DashboardNotebooksRoute,
