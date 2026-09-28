@@ -65,7 +65,7 @@ function StudentExamsPage() {
     const missing = group.docs.filter((doc) => !signedUrls[doc.id]);
     if (!missing.length) return;
     const results = await Promise.all(missing.map((doc) => supabase.storage.from("student-exams").createSignedUrl(doc.storage_path, 3600)));
-    setSignedUrls((previous) => { const next = { ...previous }; missing.forEach((doc, index) => { const url = results[index].data?.signedUrl; if (url) next[doc.id] = url; }); return next; });
+    setSignedUrls((previous) => { const next = { ...previous }; missing.forEach((doc, index) => { const url = results[index]?.data?.signedUrl; if (url) next[doc.id] = url; }); return next; });
   };
 
   if (authLoading || isLoading) return <div className="p-8 text-sm text-muted-foreground">Sincronizando histórico de provas...</div>;
@@ -94,7 +94,7 @@ function StudentExamsPage() {
       <MetricCard icon={FileStack} label="Provas analisadas" value={String(groups.length)} detail={`${totalPages} páginas processadas`} tone="navy" />
       <MetricCard icon={Target} label="Aproveitamento geral" value={`${globalAccuracy}%`} detail={`${totalCorrect} acertos em ${totalCorrect + totalWrong} itens`} tone="emerald" />
       <MetricCard icon={BarChart3} label="Melhor saldo" value={`${bestExam.score ?? 0} pts`} detail={`PF ${bestExam.contest_year} · padrão CEBRASPE`} tone="amber" />
-      <MetricCard icon={TrendingUp} label="Evolução histórica" value={`${evolution >= 0 ? "+" : ""}${evolution} p.p.`} detail={`${groups[0].contest_year} → ${groups.at(-1)?.contest_year}`} tone={evolution >= 0 ? "emerald" : "rose"} />
+      <MetricCard icon={TrendingUp} label="Evolução histórica" value={`${evolution >= 0 ? "+" : ""}${evolution} p.p.`} detail={`${groups[0]?.contest_year} → ${groups.at(-1)?.contest_year}`} tone={evolution >= 0 ? "emerald" : "rose"} />
     </section>
 
     <section className="grid gap-5 xl:grid-cols-[1.55fr_1fr]">
